@@ -3,22 +3,22 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PiggyBankSVG from "@/icons/piggybank";
-import { Button } from "@/components/button";
-import { Field } from "@/components/field";
-import { Input } from "@/components/input";
-import { TextArea } from "@/components/textarea";
-import { Select } from "@/components/select";
-import { Pill } from "@/components/pill";
-import { Divider } from "@/components/divider";
-import { Avatar } from "@/components/avatar";
+import { Button } from "./components/button";
+import { Field } from "./components/field";
+import { Input } from "./components/input";
+import { TextArea } from "./components/textarea";
+import { Select } from "./components/select";
+import { Pill } from "./components/pill";
+import { Divider } from "./components/divider";
+import { Avatar } from "./components/avatar";
 import { uid, clamp, formatEth } from "@/lib/utils";
-import { Hero } from "@/layout/hero";
-import { PiggyCard } from "@/layout/piggycard";
-import { CreatePiggybank } from "@/layout/createpiggybank";
-import { PiggyDetail } from "@/layout/piggydetail";
+import { Hero } from "./layout/hero";
+import { PiggyCard } from "./layout/piggycard";
+import { CreatePiggybank } from "./layout/createpiggybank";
+import { PiggyDetail } from "./layout/piggydetail";
 import { Piggybank, Infraction, Member, Rule, RuleType } from "@/lib/types";
 import { useBackendIntegration } from "@/lib/hooks/useBackendIntegration";
-import { WalletConnection } from "@/components/wallet-connection";
+import { WalletConnection } from "./components/wallet-connection";
 
 
 
