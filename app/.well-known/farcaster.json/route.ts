@@ -3,9 +3,13 @@ import { minikitConfig } from '../../../minikit.config';
 
 export async function GET() {
   const manifest = {
-    accountAssociation: minikitConfig.accountAssociation,
+    accountAssociation: {
+      header: minikitConfig.accountAssociation.header,
+      payload: minikitConfig.accountAssociation.payload,
+      signature: minikitConfig.accountAssociation.signature,
+    },
     frame: {
-      version: minikitConfig.miniapp.version,
+      version: "1",
       name: minikitConfig.miniapp.name,
       iconUrl: minikitConfig.miniapp.iconUrl,
       homeUrl: minikitConfig.miniapp.homeUrl,
@@ -15,13 +19,8 @@ export async function GET() {
       splashBackgroundColor: minikitConfig.miniapp.splashBackgroundColor,
       webhookUrl: minikitConfig.miniapp.webhookUrl,
     },
-    metadata: {
-      name: minikitConfig.miniapp.name,
-      description: minikitConfig.miniapp.description,
-      image: minikitConfig.miniapp.iconUrl,
-    },
     baseBuilder: {
-      ownerAddress: "0xc0f984a09fc45dcebcfcb7088cfaa1d5f8d227c2"
+      ownerAddress: "0xc0f984a09fc45dcEbCFCb7088CFAa1D5f8d227C2"
     }
   };
 
@@ -29,6 +28,7 @@ export async function GET() {
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
     },
   });
 }
