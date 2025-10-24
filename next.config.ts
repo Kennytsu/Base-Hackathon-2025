@@ -3,11 +3,14 @@ const nextConfig = {
   reactStrictMode: true,
 
   eslint: {
-    // ⚙️ Disable ESLint checks during builds (`next build`)
+    // Disable ESLint checks during builds
     ignoreDuringBuilds: true,
   },
 
-  // You can add other config options here as needed
+  typescript: {
+    // Type checking is already done separately
+    ignoreBuildErrors: false,
+  },
 };
 
 module.exports = nextConfig;
