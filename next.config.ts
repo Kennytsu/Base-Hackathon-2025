@@ -13,12 +13,13 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    // Ignore React Native modules that aren't needed in web environment
+    // Ignore React Native modules and optional dependencies that aren't needed in web environment
     config.resolve.alias = {
       ...config.resolve.alias,
       '@react-native-async-storage/async-storage': false,
       'react-native': false,
       'react-native-webview': false,
+      'pino-pretty': false,
     };
 
     // Fallback for node modules
