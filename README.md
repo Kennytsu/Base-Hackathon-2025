@@ -55,12 +55,19 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Available Scripts
 
+### Frontend
 - `npm run dev` - Start development server with Turbopack
 - `npm run build` - Build for production
 - `npm run start` - Start production server
+
+### Smart Contracts
 - `npm run compile` - Compile smart contracts
 - `npm run deploy:sepolia` - Deploy to Base Sepolia testnet
 - `npm run deploy:mainnet` - Deploy to Base mainnet (production)
+
+### Backend (Violation Detection)
+- `cd backend && npm start` - Start backend server
+- `cd backend && npm run dev` - Start in watch mode
 
 ## Project Structure
 
@@ -69,11 +76,19 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 │   ├── components/         # React components
 │   ├── layout/            # Layout components (hero, cards, etc.)
 │   ├── lib/               # Utilities and hooks
+│   ├── join/[code]/       # Invite join page
 │   └── providers.tsx      # Blockchain providers (Wagmi, OnchainKit)
+├── backend/               # Violation detection service
+│   ├── server.js          # Express server
+│   ├── db.js              # SQLite database
+│   ├── farcaster-monitor.js  # Monitoring service
+│   ├── rule-engine.js     # Rule checking logic
+│   └── package.json       # Backend dependencies
 ├── contracts/             # Solidity smart contracts
 │   └── SwearJar.sol      # Main savings contract
 ├── scripts/              # Deployment scripts
 ├── lib/                  # Shared libraries
+│   ├── farcaster.ts      # Farcaster API client
 │   └── hooks/           # Custom React hooks
 └── public/              # Static assets
 
@@ -100,18 +115,32 @@ Deployed on **Base Sepolia** for testing.
 
 ## Environment Setup
 
-### Get OnchainKit API Key
+### Get API Keys
 
+#### OnchainKit API Key (Required)
 1. Go to [Coinbase Developer Portal](https://portal.cdp.coinbase.com/)
 2. Create a new project
-3. Copy your API key
+3. Copy your API key to `.env.local`
 
-### Deploy Contract
+#### Neynar API Key (Required for Farcaster features)
+1. Go to [Neynar](https://neynar.com)
+2. Sign up for free account (100 requests/min)
+3. Copy your API key to `.env.local` and `backend/.env`
+
+### Deploy Smart Contract
 
 1. Get Base Sepolia ETH from [faucet](https://www.coinbase.com/faucets/base-ethereum-goerli-faucet)
 2. Add your private key to `.env`
-3. Run `npm run deploy:sepolia`
-4. Copy contract address to `.env.local`
+3. Run `npm run compile`
+4. Run `npm run deploy:sepolia`
+5. Copy contract address to `.env.local`
+
+### Start Backend (Optional for violation detection)
+
+1. Create `backend/.env` with `NEYNAR_API_KEY`
+2. Run `cd backend && npm install`
+3. Run `npm start`
+4. Backend runs on `http://localhost:8080`
 
 ## Contributing
 
