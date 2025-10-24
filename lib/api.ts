@@ -227,7 +227,10 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(data),
     });
-    return response;
+    return {
+      voteResponse: response.voteResponse,
+      voteResult: response.voteResult
+    };
   }
 
   async getVoteStatus(voteId: string): Promise<VoteResult> {
