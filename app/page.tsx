@@ -815,6 +815,26 @@ export default function PiggybankMiniApp() {
   const [piggies, setPiggies] = useState<Piggybank[]>([]);
   const [active, setActive] = useState<Piggybank | null>(null);
   
+  // Load piggybanks from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('piggies');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setPiggies(parsed);
+      } catch (err) {
+        console.error('Failed to load piggybanks:', err);
+      }
+    }
+  }, []);
+
+  // Save piggybanks to localStorage whenever they change
+  useEffect(() => {
+    if (piggies.length > 0) {
+      localStorage.setItem('piggies', JSON.stringify(piggies));
+    }
+  }, [piggies]);
+  
   // Backend integration
   const backend = useBackendIntegration({ 
     userAddress,

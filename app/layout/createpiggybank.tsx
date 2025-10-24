@@ -93,6 +93,7 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
       setTxStatus("✅ Bond deposited! Creating piggybank...");
 
       // Step 2: Create piggybank with local data
+      const inviteCode = uid().substring(0, 8); // Short 8-char invite code
       const piggy: Piggybank = {
         id: uid(),
         name: name || "Untitled Piggybank",
@@ -104,6 +105,8 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
         rules,
         members,
         infractions: [],
+        inviteCode,
+        creatorAddress: userAddress,
       };
 
       console.log('📦 Created piggybank:', piggy);

@@ -134,6 +134,33 @@ export function PiggyDetail({ piggy, onBack, onUpdate }: PiggyDetailProps) {
         </div>
       </div>
 
+      {/* Invite Link */}
+      {local.inviteCode && (
+        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-1">📨 Invite Friends</h3>
+              <p className="text-xs text-gray-600">Share this link for friends to join and deposit their stake</p>
+            </div>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                const inviteUrl = `${window.location.origin}/join/${local.inviteCode}`;
+                navigator.clipboard.writeText(inviteUrl);
+                alert('✅ Invite link copied to clipboard!\n\nShare it with your friends so they can join.');
+              }}
+            >
+              📋 Copy Invite Link
+            </Button>
+          </div>
+          <div className="mt-2 p-2 bg-white rounded-lg border border-gray-200">
+            <code className="text-xs text-gray-600 break-all">
+              {typeof window !== 'undefined' && `${window.location.origin}/join/${local.inviteCode}`}
+            </code>
+          </div>
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Left: Members & Leaderboard */}
         <div className="lg:col-span-2 space-y-6">

@@ -43,4 +43,6 @@ export type Piggybank = {
   infractions: Infraction[];
   periodEndsAt: number;
   image?: string;
+  inviteCode?: string; // Unique code for sharing
+  creatorAddress?: string; // Who created this piggybank
 };
