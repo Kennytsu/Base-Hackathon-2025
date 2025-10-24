@@ -31,10 +31,6 @@
     "contracts/**/*",
     "cache/**/*",
     "artifacts/**/*",
-    "typechain-types/**/*",
-    "logic/**/*",
-    "Agents/**/*",
-    "api/**/*",
-    "frontend/**/*"
+    "typechain-types/**/*"
   ]
 }
