@@ -30,9 +30,9 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
 
   // Members
   const [members, setMembers] = useState<Member[]>([
-    { id: uid(), name: "You", avatarHue: 205, breaks: 0 },
+    { id: uid(), name: "You (creator)", address: userAddress, avatarHue: 205, breaks: 0 },
   ]);
-  const addMember = (name: string) => setMembers(prev => [...prev, { id: uid(), name, avatarHue: Math.floor(Math.random()*360), breaks: 0 }]);
+  const addMember = (name: string, address?: string) => setMembers(prev => [...prev, { id: uid(), name, address, avatarHue: Math.floor(Math.random()*360), breaks: 0 }]);
   const removeMember = (id: string) => setMembers(prev => prev.filter(m => m.id !== id));
 
   // Rules
@@ -70,17 +70,27 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
 
   const handleCreate = async () => {
     if (!userAddress) {
-      setTxStatus("Please connect your wallet first");
+      setTxStatus("❌ Please connect your wallet first");
       return;
     }
 
+    console.log('🚀 Starting piggybank creation...');
+    console.log('Entry stake:', entry, 'ETH');
+    console.log('Members:', members.length);
+    console.log('Rules:', rules.length);
+
     setIsCreating(true);
-    setTxStatus("Depositing bond to contract...");
+    setTxStatus("📝 Preparing transaction...");
 
     try {
       // Step 1: Deposit bond to smart contract
-      await depositBond(entry.toString());
-      setTxStatus("Bond deposited! Creating piggybank...");
+      setTxStatus("💰 Depositing " + entry + " ETH to contract...");
+      console.log('Calling depositBond with amount:', entry);
+      
+      const txHash = await depositBond(entry.toString());
+      console.log('✅ Transaction successful! Hash:', txHash);
+      
+      setTxStatus("✅ Bond deposited! Creating piggybank...");
 
       // Step 2: Create piggybank with local data
       const piggy: Piggybank = {
@@ -96,11 +106,32 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
         infractions: [],
       };
 
+      console.log('📦 Created piggybank:', piggy);
       onCreate(piggy);
-      setTxStatus("Success!");
+      setTxStatus("🎉 Success! Piggybank created!");
+      
+      // Clear the form after a brief delay
+      setTimeout(() => {
+        setTxStatus("");
+      }, 3000);
     } catch (err: any) {
-      console.error('Failed to create piggybank:', err);
-      setTxStatus(`Error: ${err.message || 'Failed to create piggybank'}`);
+      console.error('❌ Failed to create piggybank:', err);
+      console.error('Error details:', {
+        message: err.message,
+        code: err.code,
+        reason: err.reason,
+      });
+      
+      let errorMessage = 'Failed to create piggybank';
+      if (err.message?.includes('user rejected')) {
+        errorMessage = 'Transaction cancelled by user';
+      } else if (err.message?.includes('insufficient funds')) {
+        errorMessage = 'Insufficient funds in wallet';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setTxStatus(`❌ Error: ${errorMessage}`);
     } finally {
       setIsCreating(false);
     }
@@ -137,12 +168,28 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
           <Divider />
           <div className="space-y-4">
             <MemberAdder onAdd={addMember} />
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-3">
               {members.map(m => (
-                <div key={m.id} className="flex items-center gap-4 rounded-2xl border border-[#E2E8F0] p-3">
+                <div key={m.id} className="flex items-center gap-3 rounded-2xl border border-[#E2E8F0] p-4 bg-gradient-to-r from-white to-gray-50">
                   <Avatar name={m.name} hue={m.avatarHue} />
-                  <div className="font-semibold text-[#0F172A]">{m.name}</div>
-                  <button onClick={() => removeMember(m.id)} className="ml-auto text-[#EF4444] hover:underline">Remove</button>
+                  <div className="flex-1">
+                    <div className="font-semibold text-[#0F172A]">{m.name}</div>
+                    {m.address && (
+                      <div className="text-xs text-gray-500 font-mono">
+                        {m.address.slice(0, 6)}...{m.address.slice(-4)}
+                      </div>
+                    )}
+                    {!m.address && (
+                      <div className="text-xs text-orange-600">
+                        ⚠️ No wallet address
+                      </div>
+                    )}
+                  </div>
+                  {m.id !== members[0]?.id && ( 
+                    <button onClick={() => removeMember(m.id)} className="text-[#EF4444] hover:underline text-sm">
+                      Remove
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -230,10 +277,19 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
               </div>
             )}
             {!canCreate && !userAddress && (
-              <p className="mt-2 text-xs text-[#64748B]">Connect wallet to continue.</p>
+              <div className="mt-2 p-2 bg-yellow-50 rounded text-xs text-yellow-800">
+                ⚠️ Connect your wallet to continue
+              </div>
             )}
             {!canCreate && userAddress && (
-              <p className="mt-2 text-xs text-[#64748B]">Add at least 2 members and 1 rule; name must be ≥ 3 chars.</p>
+              <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-800">
+                <strong>Requirements:</strong>
+                <ul className="mt-1 ml-4 list-disc space-y-1">
+                  {name.trim().length < 3 && <li>Piggybank name (min 3 chars)</li>}
+                  {members.length < 2 && <li>At least 2 members (you + 1 more)</li>}
+                  {rules.length < 1 && <li>At least 1 rule</li>}
+                </ul>
+              </div>
             )}
           </div>
         </div>
@@ -242,7 +298,7 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
   );
 }
 
-const MemberAdder: React.FC<{ onAdd: (name: string) => void }> = ({ onAdd }) => {
+const MemberAdder: React.FC<{ onAdd: (name: string, address?: string) => void }> = ({ onAdd }) => {
   const [value, setValue] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [error, setError] = useState("");
@@ -254,42 +310,45 @@ const MemberAdder: React.FC<{ onAdd: (name: string) => void }> = ({ onAdd }) => 
 
   const handleAdd = () => {
     if (!value.trim()) {
-      setError("Name is required");
+      setError("Display name is required");
       return;
     }
     
     if (walletAddress && !isValidAddress(walletAddress)) {
-      setError("Invalid Ethereum address (should start with 0x)");
+      setError("Invalid Ethereum address (must start with 0x and be 42 characters)");
       return;
     }
 
-    onAdd(value.trim());
+    onAdd(value.trim(), walletAddress || undefined);
     setValue("");
     setWalletAddress("");
     setError("");
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        <Input 
-          value={value} 
-          onChange={e => { setValue(e.target.value); setError(""); }} 
-          placeholder="Member name (required)" 
-        />
-        <Button variant="secondary" onClick={handleAdd}>Add</Button>
+    <div className="space-y-3 p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200">
+      <div className="text-sm font-semibold text-gray-700">
+        👥 Add Group Member
       </div>
+      <Input 
+        value={value} 
+        onChange={e => { setValue(e.target.value); setError(""); }} 
+        placeholder="Display name (e.g., 'Alice')" 
+      />
       <Input 
         value={walletAddress}
         onChange={e => { setWalletAddress(e.target.value); setError(""); }}
-        placeholder="Wallet address (optional - for future penalty application)"
-        className="text-sm"
+        placeholder="0x... wallet address (optional for now)"
+        className="text-sm font-mono"
       />
       {error && (
-        <p className="text-xs text-red-600">{error}</p>
+        <p className="text-xs text-red-600 font-medium">{error}</p>
       )}
-      <p className="text-xs text-gray-500">
-        💡 Wallet addresses are optional for now. Add them later when applying penalties onchain.
+      <Button variant="secondary" onClick={handleAdd} className="w-full">
+        ➕ Add Member
+      </Button>
+      <p className="text-xs text-gray-600 leading-relaxed">
+        💡 <strong>For MVP:</strong> Just add display names. Wallet addresses are optional—you can add them later when applying onchain penalties. To invite members, share your piggybank link!
       </p>
     </div>
   );
