@@ -15,22 +15,27 @@ export async function GET() {
     };
   }
 
-  // All miniapp fields go in the frame object per Base docs
-  manifest.frame = {
+  // Add baseBuilder section per docs
+  manifest.baseBuilder = {
+    ownerAddress: "0xc0f984a09fc45dcEbCFCb7088CFAa1D5f8d227C2"
+  };
+
+  // Add miniapp section with all fields per docs
+  manifest.miniapp = {
     version: minikitConfig.miniapp.version,
     name: minikitConfig.miniapp.name,
-    subtitle: minikitConfig.miniapp.subtitle,
-    description: minikitConfig.miniapp.description,
+    homeUrl: minikitConfig.miniapp.homeUrl,
     iconUrl: minikitConfig.miniapp.iconUrl,
     splashImageUrl: minikitConfig.miniapp.splashImageUrl,
     splashBackgroundColor: minikitConfig.miniapp.splashBackgroundColor,
-    homeUrl: minikitConfig.miniapp.homeUrl,
     webhookUrl: minikitConfig.miniapp.webhookUrl,
+    subtitle: minikitConfig.miniapp.subtitle,
+    description: minikitConfig.miniapp.description,
+    screenshotUrls: minikitConfig.miniapp.screenshotUrls,
     primaryCategory: minikitConfig.miniapp.primaryCategory,
     tags: minikitConfig.miniapp.tags,
     heroImageUrl: minikitConfig.miniapp.heroImageUrl,
     tagline: minikitConfig.miniapp.tagline,
-    screenshotUrls: minikitConfig.miniapp.screenshotUrls,
     ogTitle: minikitConfig.miniapp.ogTitle,
     ogDescription: minikitConfig.miniapp.ogDescription,
     ogImageUrl: minikitConfig.miniapp.ogImageUrl,
