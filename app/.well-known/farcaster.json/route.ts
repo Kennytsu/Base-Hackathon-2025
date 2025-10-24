@@ -4,11 +4,6 @@ export async function GET() {
   const ROOT_URL = "https://base-hackathon-2025-ten.vercel.app";
   
   const manifest = {
-    accountAssociation: {
-      header: null,
-      payload: null,
-      signature: null
-    },
     miniapp: {
       version: "1",
       name: "Piggyfi",
