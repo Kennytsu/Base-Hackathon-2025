@@ -1,45 +1,44 @@
-import React from 'react';
-import { Button } from './button';
+'use client';
+
+import React, { useEffect } from 'react';
+import { ConnectWallet, Wallet, WalletDropdown, WalletDropdownDisconnect } from '@coinbase/onchainkit/wallet';
+import { Address, Avatar, Name, Identity, EthBalance } from '@coinbase/onchainkit/identity';
+import { useAccount } from 'wagmi';
 
 interface WalletConnectionProps {
   onConnect: (address: string) => void;
   onDisconnect: () => void;
-  connected: boolean;
-  userAddress?: string;
 }
 
-export function WalletConnection({ 
-  onConnect, 
-  onDisconnect, 
-  connected, 
-  userAddress 
-}: WalletConnectionProps) {
-  const handleConnect = () => {
-    // Simulate wallet connection with a mock address
-    const mockAddress = "0x4BC146E7e24554e5Cea5c4d15Cb0aEA26D5F43A3";
-    onConnect(mockAddress);
-  };
+export function WalletConnection({ onConnect, onDisconnect }: WalletConnectionProps) {
+  const { address, isConnected } = useAccount();
 
-  const handleDisconnect = () => {
-    onDisconnect();
-  };
-
-  if (connected && userAddress) {
-    return (
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-600">
-          {userAddress.slice(0, 6)}...{userAddress.slice(-4)}
-        </span>
-        <Button variant="secondary" onClick={handleDisconnect}>
-          Disconnect
-        </Button>
-      </div>
-    );
-  }
+  // Notify parent component of connection changes
+  useEffect(() => {
+    if (isConnected && address) {
+      onConnect(address);
+    } else {
+      onDisconnect();
+    }
+  }, [isConnected, address, onConnect, onDisconnect]);
 
   return (
-    <Button variant="primary" onClick={handleConnect}>
-      Connect Wallet
-    </Button>
+    <div className="flex items-center gap-3">
+      <Wallet>
+        <ConnectWallet>
+          <Avatar className="h-6 w-6" />
+          <Name />
+        </ConnectWallet>
+        <WalletDropdown>
+          <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
+            <Avatar />
+            <Name />
+            <Address className="text-gray-500" />
+            <EthBalance />
+          </Identity>
+          <WalletDropdownDisconnect />
+        </WalletDropdown>
+      </Wallet>
+    </div>
   );
 }

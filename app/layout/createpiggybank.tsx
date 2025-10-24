@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { uid, clamp, formatEth } from '@/lib/utils';
 import { Button } from '@/components/button';
@@ -9,6 +11,7 @@ import { Pill } from '@/components/pill';
 import { Divider } from '@/components/divider';
 import { Avatar } from '@/components/avatar';
 import { Member, Rule, RuleType, Piggybank } from '@/lib/types';
+import { useSwearJar } from '@/lib/hooks/useSwearJar';
 
 interface CreatePiggybankProps {
   onCancel: () => void;
@@ -20,6 +23,10 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
   const [name, setName] = useState("");
   const [theme, setTheme] = useState("Be nice, post daily");
   const [entry, setEntry] = useState(0.01);
+  const [isCreating, setIsCreating] = useState(false);
+  const [txStatus, setTxStatus] = useState<string>("");
+
+  const { depositBond, isLoading: isDepositingBond, error } = useSwearJar();
 
   // Members
   const [members, setMembers] = useState<Member[]>([
@@ -61,7 +68,45 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
     setCustomDesc("");
   };
 
-  const canCreate = name.trim().length >= 3 && members.length >= 2 && rules.length >= 1;
+  const handleCreate = async () => {
+    if (!userAddress) {
+      setTxStatus("Please connect your wallet first");
+      return;
+    }
+
+    setIsCreating(true);
+    setTxStatus("Depositing bond to contract...");
+
+    try {
+      // Step 1: Deposit bond to smart contract
+      await depositBond(entry.toString());
+      setTxStatus("Bond deposited! Creating piggybank...");
+
+      // Step 2: Create piggybank with local data
+      const piggy: Piggybank = {
+        id: uid(),
+        name: name || "Untitled Piggybank",
+        theme,
+        createdAt: Date.now(),
+        periodEndsAt: Date.now() + 1000 * 60 * 60 * 24 * 7,
+        potEth: entry, // Your initial deposit
+        entryStakeEth: entry,
+        rules,
+        members,
+        infractions: [],
+      };
+
+      onCreate(piggy);
+      setTxStatus("Success!");
+    } catch (err: any) {
+      console.error('Failed to create piggybank:', err);
+      setTxStatus(`Error: ${err.message || 'Failed to create piggybank'}`);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const canCreate = name.trim().length >= 3 && members.length >= 2 && rules.length >= 1 && !!userAddress;
 
   return (
     <div className="grid lg:grid-cols-3 gap-8">
@@ -169,31 +214,25 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
             </div>
             <Divider />
             <div className="flex gap-3">
-              <Button variant="secondary" onClick={onCancel} className="w-1/2">Cancel</Button>
+              <Button variant="secondary" onClick={onCancel} className="w-1/2" disabled={isCreating}>Cancel</Button>
               <Button
                 variant="primary"
-                disabled={!canCreate}
-                onClick={() => {
-                  const piggy: Piggybank = {
-                    id: uid(),
-                    name: name || "Untitled Piggybank",
-                    theme,
-                    createdAt: Date.now(),
-                    periodEndsAt: Date.now() + 1000 * 60 * 60 * 24 * 7,
-                    potEth: members.length * entry, // initial deposits
-                    entryStakeEth: entry,
-                    rules,
-                    members,
-                    infractions: [],
-                  };
-                  onCreate(piggy);
-                }}
+                disabled={!canCreate || isCreating}
+                onClick={handleCreate}
                 className="w-1/2"
               >
-                Create
+                {isCreating ? 'Creating...' : 'Create & Deposit'}
               </Button>
             </div>
-            {!canCreate && (
+            {txStatus && (
+              <div className={`mt-2 text-xs p-2 rounded ${error ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}`}>
+                {txStatus}
+              </div>
+            )}
+            {!canCreate && !userAddress && (
+              <p className="mt-2 text-xs text-[#64748B]">Connect wallet to continue.</p>
+            )}
+            {!canCreate && userAddress && (
               <p className="mt-2 text-xs text-[#64748B]">Add at least 2 members and 1 rule; name must be ≥ 3 chars.</p>
             )}
           </div>

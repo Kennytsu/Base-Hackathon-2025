@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { uid, formatEth } from '@/lib/utils';
@@ -9,6 +11,7 @@ import { Pill } from '@/components/pill';
 import { Divider } from '@/components/divider';
 import { Avatar } from '@/components/avatar';
 import { Piggybank, Member, Infraction } from '@/lib/types';
+import { useSwearJar } from '@/lib/hooks/useSwearJar';
 
 interface PiggyDetailProps {
   piggy: Piggybank;
@@ -19,12 +22,23 @@ interface PiggyDetailProps {
 export function PiggyDetail({ piggy, onBack, onUpdate }: PiggyDetailProps) {
   const [local, setLocal] = useState<Piggybank>(piggy);
   const [openInfraction, setOpenInfraction] = useState(false);
+  const [isPenaltyApplying, setIsPenaltyApplying] = useState(false);
+  const [penaltyStatus, setPenaltyStatus] = useState<string>("");
+
+  const { potBalance, withdrawPot, refetchPot, isLoading, error } = useSwearJar();
 
   useEffect(() => setLocal(piggy), [piggy.id]);
 
+  useEffect(() => {
+    // Update local pot with blockchain data
+    if (potBalance) {
+      setLocal(prev => ({ ...prev, potEth: parseFloat(potBalance) }));
+    }
+  }, [potBalance]);
+
   const leader = useMemo(() => [...local.members].sort((a,b) => a.breaks - b.breaks)[0], [local]);
 
-  const recordInfraction = (memberId: string, ruleId: string, notes?: string) => {
+  const recordInfraction = async (memberId: string, ruleId: string, notes?: string, memberAddress?: string) => {
     const rule = local.rules.find(r => r.id === ruleId);
     const member = local.members.find(m => m.id === memberId);
     if (!rule || !member) return;
@@ -32,20 +46,61 @@ export function PiggyDetail({ piggy, onBack, onUpdate }: PiggyDetailProps) {
     const penaltyEth = rule.penaltyEth;
     const inf: Infraction = { id: uid(), memberId, ruleId, notes, timestamp: Date.now(), penaltyEth };
 
-    const updated: Piggybank = {
-      ...local,
-      potEth: local.potEth + penaltyEth,
-      infractions: [inf, ...local.infractions],
-      members: local.members.map(m => m.id === memberId ? { ...m, breaks: m.breaks + 1 } : m),
-    };
-    setLocal(updated);
-    onUpdate(updated);
+    setIsPenaltyApplying(true);
+    setPenaltyStatus("Recording infraction...");
+
+    try {
+      // Note: In production, you'd apply penalty to actual member's address
+      // For demo, we'll just update local state
+      // await applyPenalty(memberAddress as `0x${string}`, penaltyEth.toString());
+
+      const updated: Piggybank = {
+        ...local,
+        potEth: local.potEth + penaltyEth,
+        infractions: [inf, ...local.infractions],
+        members: local.members.map(m => m.id === memberId ? { ...m, breaks: m.breaks + 1 } : m),
+      };
+      setLocal(updated);
+      onUpdate(updated);
+      setPenaltyStatus("Infraction recorded!");
+      
+      // Refetch pot balance from contract
+      await refetchPot();
+      
+      setTimeout(() => setPenaltyStatus(""), 2000);
+    } catch (err: any) {
+      console.error('Failed to record infraction:', err);
+      setPenaltyStatus(`Error: ${err.message}`);
+    } finally {
+      setIsPenaltyApplying(false);
+    }
   };
 
-  const settleAndPickWinner = () => {
+  const settleAndPickWinner = async () => {
     const sorted = [...local.members].sort((a,b) => a.breaks - b.breaks);
     const winner = sorted[0];
-    alert(`${winner.name} wins ${formatEth(local.potEth)}! (Simulated)\n\nNext: trigger onchain transfer to winner.`);
+    
+    const confirmSettle = window.confirm(
+      `${winner.name} wins ${formatEth(local.potEth)} ETH!\n\nDo you want to withdraw the pot from the contract?\n\nNote: You need to be the contract owner to do this.`
+    );
+    
+    if (!confirmSettle) return;
+
+    setIsPenaltyApplying(true);
+    setPenaltyStatus("Withdrawing pot...");
+
+    try {
+      // In production, you'd withdraw to winner's actual address
+      // For demo, we show a message
+      alert(`Settlement feature coming soon!\n\nIn production, this would withdraw ${formatEth(local.potEth)} ETH to the winner's address.`);
+      setPenaltyStatus("Settlement complete!");
+      setTimeout(() => setPenaltyStatus(""), 2000);
+    } catch (err: any) {
+      console.error('Failed to settle:', err);
+      setPenaltyStatus(`Error: ${err.message}`);
+    } finally {
+      setIsPenaltyApplying(false);
+    }
   };
 
   const DisciplineScore: React.FC<{ m: Member }> = ({ m }) => {
@@ -58,15 +113,24 @@ export function PiggyDetail({ piggy, onBack, onUpdate }: PiggyDetailProps) {
 
   return (
     <div className="relative">
+      {penaltyStatus && (
+        <div className={`mb-4 p-3 rounded-lg ${error ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}`}>
+          {penaltyStatus}
+        </div>
+      )}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <button onClick={onBack} className="text-[#0052FF] hover:underline">← Back</button>
           <h2 className="text-2xl font-bold text-[#0F172A]">{local.name}</h2>
         </div>
         <div className="flex items-center gap-3">
-          <Pill tone="success">Pot {formatEth(local.potEth)}</Pill>
-          <Button variant="primary" onClick={() => setOpenInfraction(true)}>Record infraction</Button>
-          <Button variant="secondary" onClick={settleAndPickWinner}>End & pick winner</Button>
+          <Pill tone="success">Pot {formatEth(local.potEth)} ETH</Pill>
+          <Button variant="primary" onClick={() => setOpenInfraction(true)} disabled={isPenaltyApplying}>
+            Record infraction
+          </Button>
+          <Button variant="secondary" onClick={settleAndPickWinner} disabled={isPenaltyApplying}>
+            End & pick winner
+          </Button>
         </div>
       </div>
 
