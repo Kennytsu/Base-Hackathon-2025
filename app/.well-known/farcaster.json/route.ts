@@ -9,17 +9,6 @@ export async function GET() {
       payload: "",
       signature: ""
     },
-    frame: {
-      version: "1",
-      name: "Piggyfi",
-      iconUrl: `${ROOT_URL}/blue-icon.png`,
-      homeUrl: ROOT_URL,
-      imageUrl: `${ROOT_URL}/blue-hero.png`,
-      buttonTitle: "Launch",
-      splashImageUrl: `${ROOT_URL}/blue-hero.png`,
-      splashBackgroundColor: "#000000",
-      webhookUrl: `${ROOT_URL}/api/webhook`
-    },
     miniapp: {
       version: "1",
       name: "Piggyfi",
