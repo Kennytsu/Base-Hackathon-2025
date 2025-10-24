@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import PiggyBankSVG from "@/icons/piggybank";
+import PiggyBankSVG from "./icons/piggybank";
 import { Button } from "./components/button";
 import { Field } from "./components/field";
 import { Input } from "./components/input";
