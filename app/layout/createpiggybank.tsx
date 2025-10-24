@@ -139,6 +139,17 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
 
   const canCreate = name.trim().length >= 3 && members.length >= 2 && rules.length >= 1 && !!userAddress;
 
+  // Debug logging
+  console.log('🔍 CreatePiggybank Debug:', {
+    name: name.trim(),
+    nameLength: name.trim().length,
+    membersCount: members.length,
+    rulesCount: rules.length,
+    userAddress,
+    canCreate,
+    isCreating
+  });
+
   return (
     <div className="grid lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-6">
@@ -265,7 +276,15 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
               <Button
                 variant="primary"
                 disabled={!canCreate || isCreating}
-                onClick={handleCreate}
+                onClick={(e) => {
+                  console.log('🖱️ Button clicked!', { canCreate, isCreating });
+                  e.preventDefault();
+                  if (canCreate && !isCreating) {
+                    handleCreate();
+                  } else {
+                    console.log('⚠️ Button disabled or already creating');
+                  }
+                }}
                 className="w-1/2"
               >
                 {isCreating ? 'Creating...' : 'Create & Deposit'}
