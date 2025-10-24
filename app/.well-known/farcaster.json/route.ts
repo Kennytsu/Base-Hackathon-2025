@@ -18,7 +18,7 @@ export async function GET() {
       tags: ["finance", "savings", "social", "base", "blockchain"],
       heroImageUrl: `${ROOT_URL}/blue-hero.svg`,
       tagline: "Save smarter, together",
-      screenshotUrls: [`${ROOT_URL}/screenshot-portrait.svg`]
+      screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`]
     },
     baseBuilder: {
       ownerAddress: "0xc0f984a09fc45dcEbCFCb7088CFAa1D5f8d227C2"
