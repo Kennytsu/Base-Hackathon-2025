@@ -176,9 +176,20 @@ export function PiggyDetail({ piggy, onBack, onUpdate }: PiggyDetailProps) {
                 .map((m, idx) => (
                   <div key={m.id} className="flex items-center gap-4 p-3 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC]">
                     <div className="w-6 text-center font-bold text-[#94A3B8]">{idx+1}</div>
-                    <Avatar name={m.name} hue={m.avatarHue} />
+                    {m.pfpUrl ? (
+                      <img 
+                        src={m.pfpUrl} 
+                        alt={m.name}
+                        className="w-10 h-10 rounded-full border-2 border-purple-200"
+                      />
+                    ) : (
+                      <Avatar name={m.name} hue={m.avatarHue} />
+                    )}
                     <div className="min-w-0">
                       <div className="font-semibold text-[#0F172A] truncate">{m.name}</div>
+                      {m.farcasterUsername && (
+                        <div className="text-xs text-purple-600 font-medium truncate">{m.farcasterUsername}</div>
+                      )}
                       <DisciplineScore m={m} />
                     </div>
                     <div className="ml-auto text-right">

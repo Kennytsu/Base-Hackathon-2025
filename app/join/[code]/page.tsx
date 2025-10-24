@@ -2,9 +2,8 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
 import { Button } from '@/app/components/button';
-import { WalletConnection } from '@/app/components/wallet-connection';
+import { FarcasterAuth, FarcasterAuthUser } from '@/app/components/farcaster-auth';
 import { useSwearJar } from '@/lib/hooks/useSwearJar';
 import { Piggybank } from '@/lib/types';
 import { formatEth } from '@/lib/utils';
@@ -12,11 +11,11 @@ import { formatEth } from '@/lib/utils';
 export default function JoinPage() {
   const params = useParams();
   const router = useRouter();
-  const { address, isConnected } = useAccount();
   const { depositBond, isLoading } = useSwearJar();
   
   const inviteCode = params.code as string;
   const [piggybank, setPiggybank] = useState<Piggybank | null>(null);
+  const [farcasterUser, setFarcasterUser] = useState<FarcasterAuthUser | null>(null);
   const [isJoining, setIsJoining] = useState(false);
   const [status, setStatus] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -30,9 +29,15 @@ export default function JoinPage() {
       if (found) {
         setPiggybank(found);
         
-        // Check if user is already a member
-        if (address && found.members.some(m => m.address?.toLowerCase() === address.toLowerCase())) {
-          setStatus('✅ You are already a member of this piggybank!');
+        // Check if user is already a member (by address or FID)
+        if (farcasterUser) {
+          const alreadyMember = found.members.some(m => 
+            m.address?.toLowerCase() === farcasterUser.address.toLowerCase() ||
+            m.fid === farcasterUser.fid
+          );
+          if (alreadyMember) {
+            setStatus('✅ You are already a member of this piggybank!');
+          }
         }
       } else {
         setError('Piggybank not found. The invite link may be invalid or expired.');
@@ -40,11 +45,16 @@ export default function JoinPage() {
     } else {
       setError('No piggybanks found. The creator needs to share an active piggybank.');
     }
-  }, [inviteCode, address]);
+  }, [inviteCode, farcasterUser]);
+
+  const handleFarcasterAuth = (user: FarcasterAuthUser) => {
+    setFarcasterUser(user);
+    setError('');
+  };
 
   const handleJoin = async () => {
-    if (!address || !isConnected) {
-      setError('Please connect your wallet first');
+    if (!farcasterUser) {
+      setError('Please sign in with Farcaster first');
       return;
     }
 
@@ -54,7 +64,12 @@ export default function JoinPage() {
     }
 
     // Check if already a member
-    if (piggybank.members.some(m => m.address?.toLowerCase() === address.toLowerCase())) {
+    const alreadyMember = piggybank.members.some(m => 
+      m.address?.toLowerCase() === farcasterUser.address.toLowerCase() ||
+      m.fid === farcasterUser.fid
+    );
+    
+    if (alreadyMember) {
       setStatus('✅ You are already a member!');
       return;
     }
@@ -68,17 +83,20 @@ export default function JoinPage() {
       await depositBond(piggybank.entryStakeEth.toString());
       setStatus('✅ Deposit successful! Adding you to the group...');
 
-      // Add member to piggybank
+      // Add member to piggybank with Farcaster data
       const updatedPiggybank: Piggybank = {
         ...piggybank,
         members: [
           ...piggybank.members,
           {
-            id: `${Date.now()}-${address}`,
-            name: `Member ${address.slice(0, 6)}`,
-            address,
+            id: `${Date.now()}-${farcasterUser.fid}`,
+            name: farcasterUser.displayName,
+            address: farcasterUser.address,
             avatarHue: Math.floor(Math.random() * 360),
             breaks: 0,
+            fid: farcasterUser.fid,
+            pfpUrl: farcasterUser.pfpUrl,
+            farcasterUsername: `@${farcasterUser.username}`,
           },
         ],
         potEth: piggybank.potEth + piggybank.entryStakeEth,
@@ -116,14 +134,6 @@ export default function JoinPage() {
     }
   };
 
-  const handleWalletConnect = () => {
-    // Handled by WalletConnection component
-  };
-
-  const handleWalletDisconnect = () => {
-    setStatus('');
-  };
-
   if (error && !piggybank) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-purple-50 flex items-center justify-center p-4">
@@ -154,11 +164,10 @@ export default function JoinPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-purple-50">
       {/* Header */}
       <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/60 border-b border-white/20 shadow-sm">
-        <div className="mx-auto max-w-4xl px-4 py-4 flex items-center justify-between">
+        <div className="mx-auto max-w-4xl px-4 py-4 flex items-center justify-center">
           <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Piggyfi
           </div>
-          <WalletConnection onConnect={handleWalletConnect} onDisconnect={handleWalletDisconnect} />
         </div>
       </div>
 
@@ -229,15 +238,24 @@ export default function JoinPage() {
 
           {/* Action Buttons */}
           <div className="space-y-4">
-            {!isConnected ? (
+            {!farcasterUser ? (
+              <FarcasterAuth onSuccess={handleFarcasterAuth} onError={setError} />
+            ) : piggybank.members.some(m => 
+              m.address?.toLowerCase() === farcasterUser.address.toLowerCase() ||
+              m.fid === farcasterUser.fid
+            ) ? (
               <div className="text-center">
-                <p className="text-gray-600 mb-4">Connect your wallet to join this piggybank</p>
-                <div className="flex justify-center">
-                  <WalletConnection onConnect={handleWalletConnect} onDisconnect={handleWalletDisconnect} />
+                <div className="mb-4 flex items-center justify-center gap-3">
+                  <img 
+                    src={farcasterUser.pfpUrl} 
+                    alt={farcasterUser.displayName}
+                    className="w-16 h-16 rounded-full border-2 border-green-500"
+                  />
+                  <div className="text-left">
+                    <div className="font-semibold text-gray-900">{farcasterUser.displayName}</div>
+                    <div className="text-sm text-purple-600">@{farcasterUser.username}</div>
+                  </div>
                 </div>
-              </div>
-            ) : piggybank.members.some(m => m.address?.toLowerCase() === address?.toLowerCase()) ? (
-              <div className="text-center">
                 <p className="text-green-600 font-semibold mb-4">✅ You are already a member!</p>
                 <Button variant="primary" onClick={() => router.push('/')} className="w-full">
                   Go to Dashboard
@@ -245,6 +263,18 @@ export default function JoinPage() {
               </div>
             ) : (
               <>
+                <div className="mb-4 flex items-center justify-center gap-3 p-4 bg-purple-50 rounded-2xl border border-purple-200">
+                  <img 
+                    src={farcasterUser.pfpUrl} 
+                    alt={farcasterUser.displayName}
+                    className="w-12 h-12 rounded-full border-2 border-purple-500"
+                  />
+                  <div className="text-left">
+                    <div className="font-semibold text-gray-900">{farcasterUser.displayName}</div>
+                    <div className="text-sm text-purple-600">@{farcasterUser.username}</div>
+                    <div className="text-xs text-gray-500 font-mono">{farcasterUser.address.slice(0, 6)}...{farcasterUser.address.slice(-4)}</div>
+                  </div>
+                </div>
                 <Button
                   variant="primary"
                   onClick={handleJoin}

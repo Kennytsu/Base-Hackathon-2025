@@ -32,7 +32,17 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
   const [members, setMembers] = useState<Member[]>([
     { id: uid(), name: "You (creator)", address: userAddress, avatarHue: 205, breaks: 0 },
   ]);
-  const addMember = (name: string, address?: string) => setMembers(prev => [...prev, { id: uid(), name, address, avatarHue: Math.floor(Math.random()*360), breaks: 0 }]);
+  const addMember = (name: string, address?: string, farcasterData?: { fid: number; pfpUrl: string; farcasterUsername: string }) => {
+    const newMember: Member = {
+      id: uid(),
+      name,
+      address,
+      avatarHue: Math.floor(Math.random() * 360),
+      breaks: 0,
+      ...farcasterData, // Spread Farcaster fields if provided
+    };
+    setMembers(prev => [...prev, newMember]);
+  };
   const removeMember = (id: string) => setMembers(prev => prev.filter(m => m.id !== id));
 
   // Rules
@@ -185,15 +195,28 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
             <div className="space-y-3">
               {members.map(m => (
                 <div key={m.id} className="flex items-center gap-3 rounded-2xl border border-[#E2E8F0] p-4 bg-gradient-to-r from-white to-gray-50">
-                  <Avatar name={m.name} hue={m.avatarHue} />
+                  {m.pfpUrl ? (
+                    <img 
+                      src={m.pfpUrl} 
+                      alt={m.name}
+                      className="w-12 h-12 rounded-full border-2 border-purple-200"
+                    />
+                  ) : (
+                    <Avatar name={m.name} hue={m.avatarHue} />
+                  )}
                   <div className="flex-1">
                     <div className="font-semibold text-[#0F172A]">{m.name}</div>
+                    {m.farcasterUsername && (
+                      <div className="text-xs text-purple-600 font-medium">
+                        {m.farcasterUsername}
+                      </div>
+                    )}
                     {m.address && (
                       <div className="text-xs text-gray-500 font-mono">
                         {m.address.slice(0, 6)}...{m.address.slice(-4)}
                       </div>
                     )}
-                    {!m.address && (
+                    {!m.address && !m.farcasterUsername && (
                       <div className="text-xs text-orange-600">
                         ⚠️ No wallet address
                       </div>
@@ -320,58 +343,98 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
   );
 }
 
-const MemberAdder: React.FC<{ onAdd: (name: string, address?: string) => void }> = ({ onAdd }) => {
+const MemberAdder: React.FC<{ onAdd: (name: string, address?: string, farcasterData?: { fid: number; pfpUrl: string; farcasterUsername: string }) => void }> = ({ onAdd }) => {
   const [value, setValue] = useState("");
-  const [walletAddress, setWalletAddress] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const isValidAddress = (address: string) => {
-    if (!address) return true; // Optional
-    return /^0x[a-fA-F0-9]{40}$/.test(address);
-  };
-
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!value.trim()) {
-      setError("Display name is required");
-      return;
-    }
-    
-    if (walletAddress && !isValidAddress(walletAddress)) {
-      setError("Invalid Ethereum address (must start with 0x and be 42 characters)");
+      setError("Enter a Farcaster username (e.g., @dwr) or display name");
       return;
     }
 
-    onAdd(value.trim(), walletAddress || undefined);
-    setValue("");
-    setWalletAddress("");
-    setError("");
+    const trimmedValue = value.trim();
+    
+    // Check if it's a Farcaster username (starts with @ or looks like a username)
+    if (trimmedValue.startsWith('@') || /^[a-zA-Z0-9_-]{1,16}$/.test(trimmedValue)) {
+      setIsLoading(true);
+      setError("");
+
+      try {
+        // Import farcaster client
+        const { farcasterClient } = await import('@/lib/farcaster');
+        
+        // Look up Farcaster user
+        const farcasterUser = await farcasterClient.lookupUser(trimmedValue);
+        
+        // Add member with Farcaster data
+        onAdd(
+          farcasterUser.displayName,
+          farcasterUser.address,
+          {
+            fid: farcasterUser.fid,
+            pfpUrl: farcasterUser.pfpUrl,
+            farcasterUsername: `@${farcasterUser.username}`,
+          }
+        );
+        
+        setValue("");
+      } catch (err: any) {
+        console.error('Failed to lookup Farcaster user:', err);
+        setError(err.message || 'Failed to find Farcaster user. Try again or use a display name.');
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Just add as display name without Farcaster lookup
+      onAdd(trimmedValue, undefined, undefined);
+      setValue("");
+      setError("");
+    }
   };
 
   return (
-    <div className="space-y-3 p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200">
-      <div className="text-sm font-semibold text-gray-700">
-        👥 Add Group Member
+    <div className="space-y-3 p-4 rounded-2xl bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200">
+      <div className="flex items-center gap-2">
+        <div className="text-2xl">🎭</div>
+        <div>
+          <div className="text-sm font-semibold text-gray-800">Add Farcaster Member</div>
+          <div className="text-xs text-gray-600">Enter @username to fetch wallet & profile</div>
+        </div>
       </div>
+      
       <Input 
         value={value} 
         onChange={e => { setValue(e.target.value); setError(""); }} 
-        placeholder="Display name (e.g., 'Alice')" 
+        placeholder="@username or display name"
+        disabled={isLoading}
+        onKeyPress={(e) => {
+          if (e.key === 'Enter' && !isLoading) {
+            handleAdd();
+          }
+        }}
       />
-      <Input 
-        value={walletAddress}
-        onChange={e => { setWalletAddress(e.target.value); setError(""); }}
-        placeholder="0x... wallet address (optional for now)"
-        className="text-sm font-mono"
-      />
+      
       {error && (
-        <p className="text-xs text-red-600 font-medium">{error}</p>
+        <div className="p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+          {error}
+        </div>
       )}
-      <Button variant="secondary" onClick={handleAdd} className="w-full">
-        ➕ Add Member
+      
+      <Button 
+        variant="secondary" 
+        onClick={handleAdd} 
+        className="w-full"
+        disabled={isLoading}
+      >
+        {isLoading ? '⏳ Looking up...' : '➕ Add Member'}
       </Button>
-      <p className="text-xs text-gray-600 leading-relaxed">
-        💡 <strong>For MVP:</strong> Just add display names. Wallet addresses are optional—you can add them later when applying onchain penalties. To invite members, share your piggybank link!
-      </p>
+      
+      <div className="text-xs text-gray-600 leading-relaxed space-y-1">
+        <p>💡 <strong>Tip:</strong> Enter a Farcaster @username to automatically fetch their wallet address and profile picture.</p>
+        <p>📝 Or just enter a display name (wallet can be added later).</p>
+      </div>
     </div>
   );
 };

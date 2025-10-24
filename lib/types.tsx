@@ -3,7 +3,10 @@ export type Member = {
   name: string; 
   address?: string; 
   avatarHue?: number; 
-  breaks: number 
+  breaks: number;
+  fid?: number; // Farcaster ID
+  pfpUrl?: string; // Profile picture URL
+  farcasterUsername?: string; // @username
 };
 
 export type RuleType = "WORD_BAN" | "POST_QUOTA" | "CUSTOM";
