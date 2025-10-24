@@ -175,6 +175,40 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
       onCreate(piggy);
       setTxStatus("🎉 Success! Piggybank created!");
       
+      // Register with backend for AI monitoring (if members have FIDs)
+      const membersWithFarcaster = members.filter(m => m.fid);
+      if (membersWithFarcaster.length > 0) {
+        try {
+          setTxStatus("🤖 Registering AI monitoring...");
+          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+          
+          const response = await fetch(`${backendUrl}/groups`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: piggy.id,
+              name: piggy.name,
+              creatorAddress: userAddress,
+              inviteCode: inviteCode,
+              entryStakeEth: entry,
+              createdAt: piggy.createdAt,
+              members: members,
+              rules: rules,
+            }),
+          });
+          
+          if (response.ok) {
+            console.log('✅ Registered with AI monitoring backend');
+            setTxStatus("🎉 Success! AI monitoring enabled!");
+          } else {
+            console.warn('⚠️ Failed to register with backend, monitoring disabled');
+          }
+        } catch (err) {
+          console.warn('⚠️ Backend not available, monitoring disabled:', err);
+          // Don't fail the creation if backend is down
+        }
+      }
+      
       // Clear the form after a brief delay
       setTimeout(() => {
         setTxStatus("");
