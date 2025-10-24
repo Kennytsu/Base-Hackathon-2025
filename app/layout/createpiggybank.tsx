@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { uid, clamp, formatEth } from '@/lib/utils';
 import { Button } from '../components/button';
 import { Field } from '../components/field';
@@ -25,13 +25,27 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
   const [entry, setEntry] = useState(0.01);
   const [isCreating, setIsCreating] = useState(false);
   const [txStatus, setTxStatus] = useState<string>("");
+  const [creatorFarcasterUsername, setCreatorFarcasterUsername] = useState("");
+  const [isLoadingCreatorProfile, setIsLoadingCreatorProfile] = useState(false);
+  const [creatorProfileError, setCreatorProfileError] = useState("");
 
   const { depositBond, isLoading: isDepositingBond, error } = useSwearJar();
 
-  // Members
+  // Members - initialize with creator
   const [members, setMembers] = useState<Member[]>([
     { id: uid(), name: "You (creator)", address: userAddress, avatarHue: 205, breaks: 0 },
   ]);
+
+  // Update creator's address when userAddress changes
+  useEffect(() => {
+    setMembers(prev => {
+      const updated = [...prev];
+      if (updated[0] && updated[0].name === "You (creator)") {
+        updated[0] = { ...updated[0], address: userAddress };
+      }
+      return updated;
+    });
+  }, [userAddress]);
   const addMember = (name: string, address?: string, farcasterData?: { fid: number; pfpUrl: string; farcasterUsername: string }) => {
     const newMember: Member = {
       id: uid(),
@@ -44,6 +58,44 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
     setMembers(prev => [...prev, newMember]);
   };
   const removeMember = (id: string) => setMembers(prev => prev.filter(m => m.id !== id));
+
+  // Fetch creator's Farcaster profile
+  const fetchCreatorProfile = async () => {
+    if (!creatorFarcasterUsername.trim()) {
+      setCreatorProfileError("Enter your Farcaster username");
+      return;
+    }
+
+    setIsLoadingCreatorProfile(true);
+    setCreatorProfileError("");
+
+    try {
+      const { farcasterClient } = await import('@/lib/farcaster');
+      const profile = await farcasterClient.lookupUser(creatorFarcasterUsername);
+      
+      // Update the first member (creator) with Farcaster data
+      setMembers(prev => {
+        const updated = [...prev];
+        updated[0] = {
+          ...updated[0],
+          name: profile.displayName,
+          address: userAddress, // Keep the connected wallet address
+          fid: profile.fid,
+          pfpUrl: profile.pfpUrl,
+          farcasterUsername: `@${profile.username}`,
+        };
+        return updated;
+      });
+      
+      setCreatorProfileError("✅ Profile loaded!");
+      setTimeout(() => setCreatorProfileError(""), 2000);
+    } catch (err: any) {
+      console.error('Failed to fetch creator profile:', err);
+      setCreatorProfileError(err.message || 'Failed to find Farcaster user');
+    } finally {
+      setIsLoadingCreatorProfile(false);
+    }
+  };
 
   // Rules
   const [rules, setRules] = useState<Rule[]>([]);
@@ -182,6 +234,28 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
             <Field label="Entry stake (ETH)" hint="Each member deposits this to join">
               <Input type="number" min={0.0001} step={0.001} value={entry}
                      onChange={e => setEntry(parseFloat(e.target.value || "0"))} />
+            </Field>
+            <Field label="Your Farcaster username" hint="Optional - to show your profile pic">
+              <div className="flex gap-2">
+                <Input 
+                  value={creatorFarcasterUsername} 
+                  onChange={e => setCreatorFarcasterUsername(e.target.value)} 
+                  placeholder="@yourname or yourname" 
+                  disabled={isLoadingCreatorProfile}
+                />
+                <Button 
+                  tone="secondary" 
+                  onClick={fetchCreatorProfile}
+                  disabled={isLoadingCreatorProfile || !creatorFarcasterUsername.trim()}
+                >
+                  {isLoadingCreatorProfile ? "⏳" : "Load"}
+                </Button>
+              </div>
+              {creatorProfileError && (
+                <div className={`text-xs mt-1 ${creatorProfileError.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
+                  {creatorProfileError}
+                </div>
+              )}
             </Field>
           </div>
         </div>

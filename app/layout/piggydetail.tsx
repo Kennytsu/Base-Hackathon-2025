@@ -80,24 +80,60 @@ export function PiggyDetail({ piggy, onBack, onUpdate }: PiggyDetailProps) {
     const sorted = [...local.members].sort((a,b) => a.breaks - b.breaks);
     const winner = sorted[0];
     
+    if (!winner.address) {
+      alert(`❌ Cannot settle: Winner ${winner.name} doesn't have a wallet address connected.\n\nMembers need to join via the invite link to have their address recorded.`);
+      return;
+    }
+
+    if (!potBalance || parseFloat(potBalance) === 0) {
+      alert(`❌ Cannot settle: The pot is empty!`);
+      return;
+    }
+
     const confirmSettle = window.confirm(
-      `${winner.name} wins ${formatEth(local.potEth)} ETH!\n\nDo you want to withdraw the pot from the contract?\n\nNote: You need to be the contract owner to do this.`
+      `🏆 ${winner.name} wins ${formatEth(local.potEth)} ETH!\n\n` +
+      `Winner's address: ${winner.address}\n\n` +
+      `Do you want to withdraw the pot from the contract?\n\n` +
+      `⚠️ Note: Only the contract owner can do this.`
     );
     
     if (!confirmSettle) return;
 
     setIsPenaltyApplying(true);
-    setPenaltyStatus("Withdrawing pot...");
+    setPenaltyStatus("💰 Withdrawing pot to winner...");
 
     try {
-      // In production, you'd withdraw to winner's actual address
-      // For demo, we show a message
-      alert(`Settlement feature coming soon!\n\nIn production, this would withdraw ${formatEth(local.potEth)} ETH to the winner's address.`);
-      setPenaltyStatus("Settlement complete!");
-      setTimeout(() => setPenaltyStatus(""), 2000);
+      // Call the smart contract to withdraw pot to winner's address
+      const hash = await withdrawPot(winner.address as `0x${string}`, potBalance);
+      
+      console.log('✅ Pot withdrawn! Transaction:', hash);
+      
+      setPenaltyStatus("✅ Settlement complete! Winner paid!");
+      
+      // Update local state to reflect pot is now empty
+      setLocal(prev => ({ ...prev, potEth: 0 }));
+      onUpdate({ ...local, potEth: 0 });
+      
+      // Refresh pot balance from blockchain
+      await refetchPot();
+      
+      setTimeout(() => {
+        setPenaltyStatus("");
+        alert(`🎉 Success!\n\n${winner.name} has been paid ${formatEth(local.potEth)} ETH!\n\nTransaction: ${hash}`);
+      }, 2000);
     } catch (err: any) {
       console.error('Failed to settle:', err);
-      setPenaltyStatus(`Error: ${err.message}`);
+      const errorMsg = err.message || err.toString();
+      setPenaltyStatus(`❌ Error: ${errorMsg}`);
+      
+      // Show detailed error message
+      if (errorMsg.includes('Ownable')) {
+        alert(`❌ Transaction Failed\n\nYou are not the contract owner.\n\nOnly the wallet that deployed the contract (${process.env.NEXT_PUBLIC_CONTRACT_ADDRESS}) can withdraw the pot.`);
+      } else {
+        alert(`❌ Transaction Failed\n\n${errorMsg}`);
+      }
+      
+      setTimeout(() => setPenaltyStatus(""), 5000);
     } finally {
       setIsPenaltyApplying(false);
     }
