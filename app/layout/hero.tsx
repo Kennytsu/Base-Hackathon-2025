@@ -40,7 +40,7 @@ export function Hero({ piggyCount, totalPot }: HeroProps) {
               <span className="text-yellow-200 text-xl">{piggyCount}</span> Active Piggybanks
             </div>
             <div className="px-4 py-2 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold shadow-lg">
-              <span className="text-green-200 text-xl">{formatEth(totalPot)} ETH</span> at Stake
+              <span className="text-green-200 text-xl">{formatEth(totalPot)} </span> at Stake
             </div>
           </div>
         </div>
