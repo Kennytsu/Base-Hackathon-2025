@@ -1,17 +1,35 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
+  const ROOT_URL = "https://base-hackathon-2025-ten.vercel.app";
+  
   const manifest = {
     frame: {
       version: "1",
       name: "Piggyfi",
-      iconUrl: "https://base-hackathon-2025-ten.vercel.app/blue-icon.png",
-      homeUrl: "https://base-hackathon-2025-ten.vercel.app",
-      imageUrl: "https://base-hackathon-2025-ten.vercel.app/blue-hero.png",
+      iconUrl: `${ROOT_URL}/blue-icon.png`,
+      homeUrl: ROOT_URL,
+      imageUrl: `${ROOT_URL}/blue-hero.png`,
       buttonTitle: "Launch",
-      splashImageUrl: "https://base-hackathon-2025-ten.vercel.app/blue-hero.png",
+      splashImageUrl: `${ROOT_URL}/blue-hero.png`,
       splashBackgroundColor: "#000000",
-      webhookUrl: "https://base-hackathon-2025-ten.vercel.app/api/webhook"
+      webhookUrl: `${ROOT_URL}/api/webhook`
+    },
+    miniapp: {
+      version: "1",
+      name: "Piggyfi",
+      subtitle: "Smart Savings & Social Accountability",
+      description: "Create piggy banks, set savings goals, and stay accountable with friends on Base blockchain",
+      iconUrl: `${ROOT_URL}/blue-icon.png`,
+      splashImageUrl: `${ROOT_URL}/blue-hero.png`,
+      splashBackgroundColor: "#000000",
+      homeUrl: ROOT_URL,
+      webhookUrl: `${ROOT_URL}/api/webhook`,
+      primaryCategory: "social",
+      tags: ["finance", "savings", "social", "base", "blockchain"],
+      heroImageUrl: `${ROOT_URL}/blue-hero.png`,
+      tagline: "Save smarter, together",
+      screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`]
     }
   };
 
