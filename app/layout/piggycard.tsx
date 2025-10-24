@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { formatEth } from '@/lib/utils';
-import { Avatar } from '@/components/avatar';
-import { Pill } from '@/components/pill';
-import { Divider } from '@/components/divider';
+import { Avatar } from '../components/avatar';
+import { Pill } from '../components/pill';
+import { Divider } from '../components/divider';
 import { Piggybank } from '@/lib/types';
 
 interface PiggyCardProps {

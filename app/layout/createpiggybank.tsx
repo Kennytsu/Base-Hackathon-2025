@@ -2,14 +2,14 @@
 
 import React, { useState } from 'react';
 import { uid, clamp, formatEth } from '@/lib/utils';
-import { Button } from '@/components/button';
-import { Field } from '@/components/field';
-import { Input } from '@/components/input';
-import { TextArea } from '@/components/textarea';
-import { Select } from '@/components/select';
-import { Pill } from '@/components/pill';
-import { Divider } from '@/components/divider';
-import { Avatar } from '@/components/avatar';
+import { Button } from '../components/button';
+import { Field } from '../components/field';
+import { Input } from '../components/input';
+import { TextArea } from '../components/textarea';
+import { Select } from '../components/select';
+import { Pill } from '../components/pill';
+import { Divider } from '../components/divider';
+import { Avatar } from '../components/avatar';
 import { Member, Rule, RuleType, Piggybank } from '@/lib/types';
 import { useSwearJar } from '@/lib/hooks/useSwearJar';
 

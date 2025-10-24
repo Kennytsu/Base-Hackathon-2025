@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { uid, formatEth } from '@/lib/utils';
-import { Button } from '@/components/button';
-import { Field } from '@/components/field';
-import { Select } from '@/components/select';
-import { TextArea } from '@/components/textarea';
-import { Pill } from '@/components/pill';
-import { Divider } from '@/components/divider';
-import { Avatar } from '@/components/avatar';
+import { Button } from '../components/button';
+import { Field } from '../components/field';
+import { Select } from '../components/select';
+import { TextArea } from '../components/textarea';
+import { Pill } from '../components/pill';
+import { Divider } from '../components/divider';
+import { Avatar } from '../components/avatar';
 import { Piggybank, Member, Infraction } from '@/lib/types';
 import { useSwearJar } from '@/lib/hooks/useSwearJar';
 
