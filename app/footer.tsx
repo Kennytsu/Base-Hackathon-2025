@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Pill } from "../components/pill";
+import { Pill } from "./components/pill";
 import { cn } from "@/lib/utils";
 
 export interface FooterProps {
