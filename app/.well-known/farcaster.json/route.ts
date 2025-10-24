@@ -2,13 +2,7 @@ import { NextResponse } from 'next/server';
 import { minikitConfig } from '../../../minikit.config';
 
 export async function GET() {
-  // Build manifest with accountAssociation FIRST (order matters for some validators)
   const manifest: any = {
-    accountAssociation: {
-      header: minikitConfig.accountAssociation.header || "",
-      payload: minikitConfig.accountAssociation.payload || "",
-      signature: minikitConfig.accountAssociation.signature || "",
-    },
     baseBuilder: {
       ownerAddress: "0xc0f984a09fc45dcEbCFCb7088CFAa1D5f8d227C2"
     },
@@ -32,6 +26,17 @@ export async function GET() {
       ogImageUrl: minikitConfig.miniapp.ogImageUrl,
     }
   };
+
+  // Only add accountAssociation after it's been signed
+  if (minikitConfig.accountAssociation.header && 
+      minikitConfig.accountAssociation.payload && 
+      minikitConfig.accountAssociation.signature) {
+    manifest.accountAssociation = {
+      header: minikitConfig.accountAssociation.header,
+      payload: minikitConfig.accountAssociation.payload,
+      signature: minikitConfig.accountAssociation.signature,
+    };
+  }
 
   return NextResponse.json(manifest, {
     headers: {
