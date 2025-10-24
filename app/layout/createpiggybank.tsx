@@ -278,7 +278,7 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
                   disabled={isLoadingCreatorProfile}
                 />
                 <Button 
-                  tone="secondary" 
+                  variant="secondary" 
                   onClick={fetchCreatorProfile}
                   disabled={isLoadingCreatorProfile || !creatorFarcasterUsername.trim()}
                 >
