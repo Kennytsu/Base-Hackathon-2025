@@ -2,12 +2,19 @@ import { NextResponse } from 'next/server';
 import { minikitConfig } from '../../../minikit.config';
 
 export async function GET() {
-  const manifest = {
-    accountAssociation: {
-      header: minikitConfig.accountAssociation.header,
-      payload: minikitConfig.accountAssociation.payload,
-      signature: minikitConfig.accountAssociation.signature,
-    },
+  // Only include accountAssociation if it's been filled
+  const hasAccountAssociation = minikitConfig.accountAssociation.header && 
+                                 minikitConfig.accountAssociation.payload && 
+                                 minikitConfig.accountAssociation.signature;
+
+  const manifest: any = {
+    ...(hasAccountAssociation && {
+      accountAssociation: {
+        header: minikitConfig.accountAssociation.header,
+        payload: minikitConfig.accountAssociation.payload,
+        signature: minikitConfig.accountAssociation.signature,
+      }
+    }),
     frame: {
       version: "1",
       name: minikitConfig.miniapp.name,
