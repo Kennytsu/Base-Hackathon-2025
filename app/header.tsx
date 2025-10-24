@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Button } from "../components/button";
+import { Button } from "./components/button";
 import { cn } from "@/lib/utils";
-import PiggyBankSVG from "../icons/piggybank";
+import PiggyBankSVG from "./icons/piggybank";
 import { Moon, Sun } from "lucide-react";
 
 export interface HeaderProps {
