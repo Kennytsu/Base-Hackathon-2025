@@ -15,8 +15,8 @@ export async function GET() {
     };
   }
 
-  // Add miniapp section directly from config
-  manifest.miniapp = {
+  // All miniapp fields go in the frame object per Base docs
+  manifest.frame = {
     version: minikitConfig.miniapp.version,
     name: minikitConfig.miniapp.name,
     subtitle: minikitConfig.miniapp.subtitle,
@@ -31,6 +31,9 @@ export async function GET() {
     heroImageUrl: minikitConfig.miniapp.heroImageUrl,
     tagline: minikitConfig.miniapp.tagline,
     screenshotUrls: minikitConfig.miniapp.screenshotUrls,
+    ogTitle: minikitConfig.miniapp.ogTitle,
+    ogDescription: minikitConfig.miniapp.ogDescription,
+    ogImageUrl: minikitConfig.miniapp.ogImageUrl,
   };
 
   return NextResponse.json(manifest, {
