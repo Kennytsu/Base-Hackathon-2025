@@ -2,12 +2,7 @@ import { NextResponse } from 'next/server';
 import { minikitConfig } from '../../../minikit.config';
 
 export async function GET() {
-  const manifest = {
-    accountAssociation: {
-      header: minikitConfig.accountAssociation.header,
-      payload: minikitConfig.accountAssociation.payload,
-      signature: minikitConfig.accountAssociation.signature,
-    },
+  const manifest: any = {
     frame: {
       version: "1",
       name: minikitConfig.miniapp.name,
@@ -39,6 +34,17 @@ export async function GET() {
       ownerAddress: "0xc0f984a09fc45dcEbCFCb7088CFAa1D5f8d227C2"
     }
   };
+
+  // Only add accountAssociation if it's been signed (has non-empty values)
+  if (minikitConfig.accountAssociation.header && 
+      minikitConfig.accountAssociation.payload && 
+      minikitConfig.accountAssociation.signature) {
+    manifest.accountAssociation = {
+      header: minikitConfig.accountAssociation.header,
+      payload: minikitConfig.accountAssociation.payload,
+      signature: minikitConfig.accountAssociation.signature,
+    };
+  }
 
   return NextResponse.json(manifest, {
     headers: {
