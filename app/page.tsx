@@ -885,74 +885,135 @@ export default function PiggybankMiniApp() {
   }, [view]);
 
   return (
-    <div
-  className="min-h-[100dvh] transition-colors duration-300"
-  style={{
-    backgroundColor: "var(--color-bg)",
-    color: "var(--color-text)",
-  }}
->
-      {/* Header with wallet connection */}
-      <div className="sticky top-0 z-40 backdrop-blur bg-white/70 border-b border-gray-200">
-        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="text-sm tracking-wide text-gray-500">Mini App on Base</div>
-            <div className="font-extrabold text-lg text-gray-900">Piggyfi</div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-purple-50">
+      {/* Modern Header with glassmorphism */}
+      <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/60 border-b border-white/20 shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo & Branding */}
+            <button 
+              onClick={() => setView("dashboard")}
+              className="flex items-center gap-3 group transition-all hover:scale-105"
+            >
+              <div className="relative">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+                  <span className="text-2xl">🐷</span>
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-400 border-2 border-white"></div>
+              </div>
+              <div>
+                <div className="text-xs font-medium text-blue-600 uppercase tracking-wider">Base Chain</div>
+                <div className="font-black text-xl bg-gradient-to-r from-blue-600 to-pink-600 bg-clip-text text-transparent">
+                  Piggyfi
+                </div>
+              </div>
+            </button>
+
+            {/* Wallet Connection */}
+            <div className="flex items-center gap-4">
+              {connected && (
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 text-green-700 text-sm font-medium">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                  Connected
+                </div>
+              )}
+              <WalletConnection
+                onConnect={handleWalletConnect}
+                onDisconnect={handleWalletDisconnect}
+              />
+            </div>
           </div>
-          <WalletConnection
-            onConnect={handleWalletConnect}
-            onDisconnect={handleWalletDisconnect}
-            connected={connected}
-            userAddress={userAddress}
-          />
         </div>
       </div>
 
       {/* Page container */}
-      <div className="mx-auto max-w-6xl px-4 py-8 space-y-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {view === "dashboard" && (
-          <>
+          <div className="space-y-8">
             <Hero piggyCount={piggies.length} totalPot={totalPot} />
 
-            <h2 id="page-title" tabIndex={-1} className="sr-only">Dashboard</h2>
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {/* Section Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Piggybanks</h2>
+                <p className="mt-1 text-sm text-gray-600">Track your savings goals and compete with friends</p>
+              </div>
+              <Button 
+                variant="primary"
+                onClick={() => setView("create")}
+                className="hidden sm:flex items-center gap-2"
+              >
+                <span className="text-lg">+</span>
+                New Piggybank
+              </Button>
+            </div>
+
+            {/* Piggybank Grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {piggies.map(p => (
                 <PiggyCard key={p.id} piggy={p} onOpen={() => { setActive(p); setView("detail"); }} />
               ))}
+              
+              {/* Create New Card */}
               <button
-              onClick={() => setView("create")}
-              className="rounded-2xl p-5 border-dashed border-2 text-left hover:shadow-md transition"
-              style={{
-                backgroundColor: "var(--color-surface)",
-                borderColor: "var(--color-border)",
-              }}
-            >
-              <div
-                className="text-sm"
-                style={{ color: "var(--color-muted-text)" }}
+                onClick={() => setView("create")}
+                className="group relative overflow-hidden rounded-3xl p-8 border-2 border-dashed border-gray-300 bg-white/50 hover:bg-white hover:border-blue-400 hover:shadow-xl transition-all duration-300 text-left"
               >
-                Start a new one
-              </div>
-              <div
-                className="font-bold text-lg"
-                style={{ color: "var(--color-text)" }}
-              >
-                Create a Piggybank
-              </div>
-              <p
-                className="mt-2 text-sm"
-                style={{ color: "var(--color-muted-text)" }}
-              >
-                Define rules, invite friends, stake, and compete.
-              </p>
-            </button>
+                <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-gradient-to-br from-blue-100 to-pink-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-pink-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span className="text-2xl text-white">+</span>
+                  </div>
+                  
+                  <h3 className="font-bold text-lg text-gray-900 mb-2">
+                    Create New Piggybank
+                  </h3>
+                  
+                  <p className="text-sm text-gray-600">
+                    Set goals, add members, and start saving together on Base
+                  </p>
+                  
+                  <div className="mt-4 flex items-center gap-2 text-blue-600 font-medium text-sm group-hover:gap-3 transition-all">
+                    <span>Get Started</span>
+                    <span>→</span>
+                  </div>
+                </div>
+              </button>
             </div>
-          </>
+
+            {/* Mobile Create Button */}
+            <div className="sm:hidden fixed bottom-6 right-6 z-40">
+              <button
+                onClick={() => setView("create")}
+                className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-pink-500 shadow-lg hover:shadow-xl flex items-center justify-center text-white text-2xl transition-all hover:scale-110"
+              >
+                +
+              </button>
+            </div>
+          </div>
         )}
 
         {view === "create" && (
-          <>
-            <h2 id="page-title" tabIndex={-1} className="text-2xl font-bold">Create</h2>
+          <div className="space-y-6">
+            {/* Back Button & Header */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setView("dashboard")}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
+              >
+                <span className="group-hover:-translate-x-1 transition-transform">←</span>
+                <span className="font-medium">Back</span>
+              </button>
+            </div>
+            
+            <div className="mb-8">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+                Create Your Piggybank
+              </h2>
+              <p className="text-gray-600">Set up rules, invite members, and start saving together</p>
+            </div>
+
             <CreatePiggybank
               onCancel={() => setView("dashboard")}
               onCreate={(p) => {
@@ -962,7 +1023,7 @@ export default function PiggybankMiniApp() {
               }}
               userAddress={userAddress}
             />
-          </>
+          </div>
         )}
 
         {view === "detail" && active && (
