@@ -244,10 +244,53 @@ export function CreatePiggybank({ onCancel, onCreate, userAddress }: CreatePiggy
 
 const MemberAdder: React.FC<{ onAdd: (name: string) => void }> = ({ onAdd }) => {
   const [value, setValue] = useState("");
+  const [walletAddress, setWalletAddress] = useState("");
+  const [error, setError] = useState("");
+
+  const isValidAddress = (address: string) => {
+    if (!address) return true; // Optional
+    return /^0x[a-fA-F0-9]{40}$/.test(address);
+  };
+
+  const handleAdd = () => {
+    if (!value.trim()) {
+      setError("Name is required");
+      return;
+    }
+    
+    if (walletAddress && !isValidAddress(walletAddress)) {
+      setError("Invalid Ethereum address (should start with 0x)");
+      return;
+    }
+
+    onAdd(value.trim());
+    setValue("");
+    setWalletAddress("");
+    setError("");
+  };
+
   return (
-    <div className="flex gap-2">
-      <Input value={value} onChange={e => setValue(e.target.value)} placeholder="Add member by name" />
-      <Button variant="secondary" onClick={() => { if (value.trim()) { onAdd(value.trim()); setValue(""); } }}>Add</Button>
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <Input 
+          value={value} 
+          onChange={e => { setValue(e.target.value); setError(""); }} 
+          placeholder="Member name (required)" 
+        />
+        <Button variant="secondary" onClick={handleAdd}>Add</Button>
+      </div>
+      <Input 
+        value={walletAddress}
+        onChange={e => { setWalletAddress(e.target.value); setError(""); }}
+        placeholder="Wallet address (optional - for future penalty application)"
+        className="text-sm"
+      />
+      {error && (
+        <p className="text-xs text-red-600">{error}</p>
+      )}
+      <p className="text-xs text-gray-500">
+        💡 Wallet addresses are optional for now. Add them later when applying penalties onchain.
+      </p>
     </div>
   );
 };

@@ -94,52 +94,7 @@ import { WalletConnection } from "@/components/wallet-connection";
 //   image?: string; // optional cover image URL
 // };
 
-// Preseed a demo Piggybank for instant visuals
-const seedPiggybank = (): Piggybank => {
-  const m1: Member = { id: uid(), name: "Ava", avatarHue: 205, breaks: 1 };
-  const m2: Member = { id: uid(), name: "Ben", avatarHue: 320, breaks: 2 };
-  const m3: Member = { id: uid(), name: "Kai", avatarHue: 145, breaks: 0 };
-
-  const r1: Rule = {
-    id: uid(),
-    label: "No Cursing",
-    type: "WORD_BAN",
-    config: { bannedWords: ["dang", "heck", "frick"] },
-    penaltyEth: 0.002,
-  };
-  const r2: Rule = {
-    id: uid(),
-    label: "Daily Cast",
-    type: "POST_QUOTA",
-    config: { minPostsPerWeek: 7 },
-    penaltyEth: 0.005,
-  };
-  const r3: Rule = {
-    id: uid(),
-    label: "Be Kind",
-    type: "CUSTOM",
-    config: { description: "No negative vibes in replies" },
-    penaltyEth: 0.003,
-  };
-
-  return {
-    id: uid(),
-    name: "No-Curse November",
-    theme: "Keep it wholesome, keep it fun",
-    createdAt: Date.now() - 1000 * 60 * 60 * 24 * 3,
-    periodEndsAt: Date.now() + 1000 * 60 * 60 * 24 * 10,
-    potEth: 0.032,
-    entryStakeEth: 0.01,
-    rules: [r1, r2, r3],
-    members: [m1, m2, m3],
-    infractions: [
-      { id: uid(), memberId: m2.id, ruleId: r1.id, timestamp: Date.now()-86400000*2, penaltyEth: r1.penaltyEth, notes: "slip in group chat" },
-      { id: uid(), memberId: m1.id, ruleId: r3.id, timestamp: Date.now()-86400000, penaltyEth: r3.penaltyEth, notes: "too spicy reply" },
-      { id: uid(), memberId: m2.id, ruleId: r2.id, timestamp: Date.now()-3600000, penaltyEth: r2.penaltyEth, notes: "missed daily cast" },
-    ],
-    image: "",
-  };
-};
+// Demo data removed - app now starts with empty state for production
 
 // -----------------------------
 // Iconography (inline SVGs)
@@ -857,8 +812,8 @@ export default function PiggybankMiniApp() {
   const [view, setView] = useState<View>("dashboard");
   const [connected, setConnected] = useState(false);
   const [userAddress, setUserAddress] = useState<string | undefined>();
-  const [piggies, setPiggies] = useState<Piggybank[]>([seedPiggybank()]);
-  const [active, setActive] = useState<Piggybank | null>(piggies[0]);
+  const [piggies, setPiggies] = useState<Piggybank[]>([]);
+  const [active, setActive] = useState<Piggybank | null>(null);
   
   // Backend integration
   const backend = useBackendIntegration({ 
@@ -932,65 +887,123 @@ export default function PiggybankMiniApp() {
           <div className="space-y-8">
             <Hero piggyCount={piggies.length} totalPot={totalPot} />
 
-            {/* Section Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Piggybanks</h2>
-                <p className="mt-1 text-sm text-gray-600">Track your savings goals and compete with friends</p>
-              </div>
-              <Button 
-                variant="primary"
-                onClick={() => setView("create")}
-                className="hidden sm:flex items-center gap-2"
-              >
-                <span className="text-lg">+</span>
-                New Piggybank
-              </Button>
-            </div>
-
-            {/* Piggybank Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {piggies.map(p => (
-                <PiggyCard key={p.id} piggy={p} onOpen={() => { setActive(p); setView("detail"); }} />
-              ))}
-              
-              {/* Create New Card */}
-              <button
-                onClick={() => setView("create")}
-                className="group relative overflow-hidden rounded-3xl p-8 border-2 border-dashed border-gray-300 bg-white/50 hover:bg-white hover:border-blue-400 hover:shadow-xl transition-all duration-300 text-left"
-              >
-                <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-gradient-to-br from-blue-100 to-pink-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-pink-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <span className="text-2xl text-white">+</span>
+            {piggies.length === 0 ? (
+              /* Empty State */
+              <div className="flex flex-col items-center justify-center py-20 px-4">
+                <div className="relative mb-8">
+                  <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-pink-100 rounded-full flex items-center justify-center">
+                    <span className="text-6xl">🐷</span>
                   </div>
-                  
-                  <h3 className="font-bold text-lg text-gray-900 mb-2">
-                    Create New Piggybank
-                  </h3>
-                  
-                  <p className="text-sm text-gray-600">
-                    Set goals, add members, and start saving together on Base
-                  </p>
-                  
-                  <div className="mt-4 flex items-center gap-2 text-blue-600 font-medium text-sm group-hover:gap-3 transition-all">
-                    <span>Get Started</span>
-                    <span>→</span>
+                  <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-2xl">💰</span>
                   </div>
                 </div>
-              </button>
-            </div>
+                
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 text-center">
+                  Welcome to Piggyfi!
+                </h2>
+                
+                <p className="text-lg text-gray-600 max-w-2xl text-center mb-8">
+                  Create your first piggybank to start saving with friends. Set rules, stake ETH, 
+                  and compete to see who has the best discipline!
+                </p>
 
-            {/* Mobile Create Button */}
-            <div className="sm:hidden fixed bottom-6 right-6 z-40">
-              <button
-                onClick={() => setView("create")}
-                className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-pink-500 shadow-lg hover:shadow-xl flex items-center justify-center text-white text-2xl transition-all hover:scale-110"
-              >
-                +
-              </button>
-            </div>
+                <div className="flex flex-col sm:flex-row gap-4 mb-12">
+                  <Button 
+                    variant="primary"
+                    onClick={() => setView("create")}
+                    className="flex items-center gap-2 text-lg px-8 py-4"
+                  >
+                    <span className="text-xl">+</span>
+                    Create Your First Piggybank
+                  </Button>
+                </div>
+
+                {/* Feature Cards */}
+                <div className="grid sm:grid-cols-3 gap-6 max-w-4xl w-full mt-8">
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-gray-200">
+                    <div className="text-4xl mb-3">🎯</div>
+                    <h3 className="font-bold text-gray-900 mb-2">Set Goals</h3>
+                    <p className="text-sm text-gray-600">Define savings rules and penalties</p>
+                  </div>
+                  
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-gray-200">
+                    <div className="text-4xl mb-3">👥</div>
+                    <h3 className="font-bold text-gray-900 mb-2">Invite Friends</h3>
+                    <p className="text-sm text-gray-600">Compete and hold each other accountable</p>
+                  </div>
+                  
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-gray-200">
+                    <div className="text-4xl mb-3">🏆</div>
+                    <h3 className="font-bold text-gray-900 mb-2">Win Rewards</h3>
+                    <p className="text-sm text-gray-600">Most disciplined wins the pot</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Existing Piggybanks View */
+              <>
+                {/* Section Header */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Piggybanks</h2>
+                    <p className="mt-1 text-sm text-gray-600">Track your savings goals and compete with friends</p>
+                  </div>
+                  <Button 
+                    variant="primary"
+                    onClick={() => setView("create")}
+                    className="hidden sm:flex items-center gap-2"
+                  >
+                    <span className="text-lg">+</span>
+                    New Piggybank
+                  </Button>
+                </div>
+
+                {/* Piggybank Grid */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {piggies.map(p => (
+                    <PiggyCard key={p.id} piggy={p} onOpen={() => { setActive(p); setView("detail"); }} />
+                  ))}
+                  
+                  {/* Create New Card */}
+                  <button
+                    onClick={() => setView("create")}
+                    className="group relative overflow-hidden rounded-3xl p-8 border-2 border-dashed border-gray-300 bg-white/50 hover:bg-white hover:border-blue-400 hover:shadow-xl transition-all duration-300 text-left"
+                  >
+                    <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-gradient-to-br from-blue-100 to-pink-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-pink-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <span className="text-2xl text-white">+</span>
+                      </div>
+                      
+                      <h3 className="font-bold text-lg text-gray-900 mb-2">
+                        Create New Piggybank
+                      </h3>
+                      
+                      <p className="text-sm text-gray-600">
+                        Set goals, add members, and start saving together on Base
+                      </p>
+                      
+                      <div className="mt-4 flex items-center gap-2 text-blue-600 font-medium text-sm group-hover:gap-3 transition-all">
+                        <span>Get Started</span>
+                        <span>→</span>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Mobile Create Button */}
+                <div className="sm:hidden fixed bottom-6 right-6 z-40">
+                  <button
+                    onClick={() => setView("create")}
+                    className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-pink-500 shadow-lg hover:shadow-xl flex items-center justify-center text-white text-2xl transition-all hover:scale-110"
+                  >
+                    +
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 
