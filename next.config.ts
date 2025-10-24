@@ -13,7 +13,7 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
 
-  webpack: (config, { isServer }) => {
+  webpack: (config: any, { isServer }: { isServer: boolean }) => {
     // Ignore React Native modules and optional dependencies that aren't needed in web environment
     config.resolve.alias = {
       ...config.resolve.alias,

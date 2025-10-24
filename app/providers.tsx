@@ -13,7 +13,7 @@ const isProduction = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production';
 const chain = isProduction ? base : baseSepolia;
 
 const wagmiConfig = createConfig({
-  chains: [chain],
+  chains: [chain] as const,
   connectors: [
     coinbaseWallet({
       appName: 'Piggyfi',
@@ -22,7 +22,8 @@ const wagmiConfig = createConfig({
   ],
   ssr: true,
   transports: {
-    [chain.id]: http(),
+    [base.id]: http(),
+    [baseSepolia.id]: http(),
   },
 });
 

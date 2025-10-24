@@ -1,60 +1,44 @@
-"use client";
-import React, { useState } from 'react';
-import { Button } from './button';
+'use client';
+
+import React, { useEffect } from 'react';
+import { ConnectWallet, Wallet, WalletDropdown, WalletDropdownDisconnect } from '@coinbase/onchainkit/wallet';
+import { Address, Avatar, Name, Identity, EthBalance } from '@coinbase/onchainkit/identity';
+import { useAccount } from 'wagmi';
 
 interface WalletConnectionProps {
   onConnect: (address: string) => void;
   onDisconnect: () => void;
-  connected: boolean;
-  userAddress?: string;
 }
 
-export const WalletConnection: React.FC<WalletConnectionProps> = ({
-  onConnect,
-  onDisconnect,
-  connected,
-  userAddress
-}) => {
-  const [loading, setLoading] = useState(false);
+export function WalletConnection({ onConnect, onDisconnect }: WalletConnectionProps) {
+  const { address, isConnected } = useAccount();
 
-  const handleConnect = async () => {
-    setLoading(true);
-    try {
-      // For Base miniapp, this would integrate with OnchainKit
-      // For now, we'll simulate a connection
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      onConnect("0x1234567890123456789012345678901234567890");
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
-    } finally {
-      setLoading(false);
+  // Notify parent component of connection changes
+  useEffect(() => {
+    if (isConnected && address) {
+      onConnect(address);
+    } else {
+      onDisconnect();
     }
-  };
-
-  const handleDisconnect = () => {
-    onDisconnect();
-  };
-
-  if (connected && userAddress) {
-    return (
-      <div className="flex items-center gap-3">
-        <div className="text-sm text-gray-600">
-          {userAddress.slice(0, 6)}...{userAddress.slice(-4)}
-        </div>
-        <Button variant="secondary" onClick={handleDisconnect}>
-          Disconnect
-        </Button>
-      </div>
-    );
-  }
+  }, [isConnected, address, onConnect, onDisconnect]);
 
   return (
-    <Button 
-      variant="primary" 
-      onClick={handleConnect}
-      disabled={loading}
-    >
-      {loading ? 'Connecting...' : 'Connect Wallet'}
-    </Button>
+    <div className="flex items-center gap-3">
+      <Wallet>
+        <ConnectWallet>
+          <Avatar className="h-6 w-6" />
+          <Name />
+        </ConnectWallet>
+        <WalletDropdown>
+          <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
+            <Avatar />
+            <Name />
+            <Address className="text-gray-500" />
+            <EthBalance />
+          </Identity>
+          <WalletDropdownDisconnect />
+        </WalletDropdown>
+      </Wallet>
+    </div>
   );
-};
+}

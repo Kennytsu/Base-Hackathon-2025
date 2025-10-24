@@ -902,8 +902,6 @@ export default function PiggybankMiniApp() {
           <WalletConnection
             onConnect={handleWalletConnect}
             onDisconnect={handleWalletDisconnect}
-            connected={connected}
-            userAddress={userAddress}
           />
         </div>
       </div>
