@@ -21,7 +21,7 @@ export async function GET() {
       image: minikitConfig.miniapp.iconUrl,
     },
     baseBuilder: {
-      ownerAddress: process.env.NEXT_PUBLIC_OWNER_ADDRESS || "0x0ec298fDdf45ca143B26bCd4fD4BE75D58d2E84B"
+      ownerAddress: "0xc0f984a09fc45dcebcfcb7088cfaa1d5f8d227c2"
     }
   };
 
