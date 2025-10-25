@@ -7,7 +7,7 @@
 
 ## 🔗 Live Deployment
 
-**Production URL:** https://base-hackathon-2025.vercel.app (or your actual Vercel URL)
+**Production URL:** https://base-hackathon-2025-ten.vercel.app
 
 **GitHub Repository:** https://github.com/Kennytsu/Base-Hackathon-2025
 
@@ -22,13 +22,13 @@
 
 ### Contract Details
 - **Contract Name:** SwearJar
-- **Contract Address:** `0x0ec298fDdf45ca143B26bCd4fD4BE75D58d2E84B`
-- **Deployment Transaction:** [View on BaseScan](https://sepolia.basescan.org/address/0x0ec298fDdf45ca143B26bCd4fD4BE75D58d2E84B)
-- **Deployed By:** `0x[your deployer address]`
+- **Contract Address:** `0x15ae73296Ebc62c47bd6760Cc0E99eDb73259283`
+- **Deployment Transaction:** [View on BaseScan](https://sepolia.basescan.org/address/0x15ae73296Ebc62c47bd6760Cc0E99eDb73259283)
+- **Deployed By:** `0x4BC146E7e24554e5Cea5c4d15Cb0aEA26D5F43A3`
 - **Block Number:** [deployment block number]
 
 ### Contract Verification
-✅ **Verify Contract:** https://sepolia.basescan.org/address/0x0ec298fDdf45ca143B26bCd4fD4BE75D58d2E84B#code
+✅ **Verify Contract:** https://sepolia.basescan.org/address/0x15ae73296Ebc62c47bd6760Cc0E99eDb73259283#code
 
 ---
 
@@ -36,22 +36,16 @@
 
 ### Transaction 1: Contract Deployment
 - **Type:** Contract Creation
-- **Hash:** `[deployment tx hash]`
+- **Hash:** `[Deployment via script - not visible in transactions tab]`
 - **Status:** ✅ Success
-- **View:** [BaseScan Link](https://sepolia.basescan.org/tx/[tx-hash])
+- **Note:** Contract is deployed and verified at the address above
 
 ### Transaction 2: Bond Deposit
 - **Type:** `depositBond()`
-- **Amount:** 0.01 ETH
-- **Hash:** `[tx hash]`
+- **Amount:** 0.001 ETH
+- **Hash:** `0x91fdbf79fde38bdf7aa6a7d2ddf87e51d8d02833522c63fecd1d6f9ae416858c`
 - **Status:** ✅ Success
-- **View:** [BaseScan Link](https://sepolia.basescan.org/tx/[tx-hash])
-
-### Transaction 3: [Additional Test Transaction]
-- **Type:** [Function name]
-- **Hash:** `[tx hash]`
-- **Status:** ✅ Success
-- **View:** [BaseScan Link](https://sepolia.basescan.org/tx/[tx-hash])
+- **View:** [BaseScan Link](https://sepolia.basescan.org/tx/0x91fdbf79fde38bdf7aa6a7d2ddf87e51d8d02833522c63fecd1d6f9ae416858c)
 
 ---
 
