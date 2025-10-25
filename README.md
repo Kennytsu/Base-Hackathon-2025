@@ -1,4 +1,4 @@
-# Piggyfi - Smart Savings on Base
+# Piggyfi - Smart Savings on Base (TUM Blockchain Club Hackathon)
 
 A social accountability savings app built on Base blockchain. Create piggybanks, set savings goals, and stay accountable with friends through onchain penalties.
 
