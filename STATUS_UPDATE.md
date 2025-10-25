@@ -78,11 +78,12 @@ The AI monitoring was not working because the frontend didn't know where the bac
 
 ### **High Priority (Before Demo)**
 1. ✅ **Test AI monitoring** (see above)
-2. ⏳ **Record demo video** (script available in `VIDEO_SCRIPT.md`)
-3. ⏳ **Submit to Base Build** 
+2. ✅ **Deploy smart contract** - Contract: `0x15ae73296Ebc62c47bd6760Cc0E99eDb73259283`
+3. ⏳ **Record demo video** (script available in `VIDEO_SCRIPT.md`)
+4. ⏳ **Submit to Base Build** 
    - URL: Your Vercel domain
    - Manifest: `/.well-known/farcaster.json`
-4. ⏳ **Test pot withdrawal** (settle piggybank + verify winner gets funds)
+5. ⏳ **Test pot withdrawal** (settle piggybank + verify winner gets funds)
 
 ### **Optional Improvements**
 - Add loading states for better UX

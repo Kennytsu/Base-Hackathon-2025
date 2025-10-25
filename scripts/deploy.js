@@ -13,7 +13,7 @@ async function main() {
   const balance = await ethers.provider.getBalance(deployer.address);
   console.log(`Account balance: ${ethers.formatEther(balance)} ETH`);
   
-  if (balance < ethers.parseEther("0.001")) {
+  if (balance < ethers.parseEther("0.000001")) {
     console.log("❌ Insufficient balance. Please add ETH to your account.");
     console.log("Get testnet ETH from: https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet");
     return;
@@ -38,7 +38,7 @@ async function main() {
     contractAddress: address,
     deployer: deployer.address,
     network: network.name,
-    chainId: network.chainId,
+    chainId: Number(network.chainId),
     deploymentTime: new Date().toISOString(),
     transactionHash: swearJar.deploymentTransaction()?.hash,
   };
